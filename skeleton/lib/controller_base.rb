@@ -24,6 +24,8 @@ class ControllerBase
   def redirect_to(url)
     raise "Double render error" if already_built_response?
 
+    @res = session.store_session(@res)
+
     @res.status = 302
     @res['location'] = url
 
@@ -35,8 +37,9 @@ class ControllerBase
   # Raise an error if the developer tries to double render.
   def render_content(content, content_type)
     content_type ||= 'text/html'
-
     raise "Double render error" if already_built_response?
+
+    @res = session.store_session(@res)
 
     @res['Content-Type'] = content_type
     @res.write(content)
@@ -59,6 +62,7 @@ class ControllerBase
 
   # method exposing a `Session` object
   def session
+    @session ||= Session.new(@req)
   end
 
   # use this with the router to call action_name (:index, :show, :create...)
