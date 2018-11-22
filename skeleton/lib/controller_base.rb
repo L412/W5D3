@@ -2,6 +2,8 @@ require 'active_support'
 require 'active_support/core_ext'
 require 'erb'
 require_relative './session'
+require 'active_support/inflector'
+require 'byebug'
 
 class ControllerBase
   attr_reader :req, :res, :params
@@ -46,8 +48,12 @@ class ControllerBase
   def render(template_name)
     raise "Double render error" if already_built_response?
 
+    controller_name = self.class.name.underscore
     path = File.dirname(__FILE__)
-    new_path = File.join(path, 'views', '#{template_name}.html.erb')
+    new_path = File.join(path, "..", 'views', controller_name, "#{template_name}.html.erb")
+    content = File.read(new_path)
+    erb_template = ERB.new(content).result(binding)
+    render_content(erb_template, 'text/html')
     @already_built_response = true
   end
 
